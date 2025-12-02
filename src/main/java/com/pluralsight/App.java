@@ -8,19 +8,44 @@ public class App {
         String username = args[0];
         String password = args [1];
 
-        Connection myConnection = DriverManager.getConnection(url,username,password);
+        Connection connection = DriverManager.getConnection(url,username,password);
 
-        Statement myStatement = myConnection.createStatement();
 
-        String myQuery = "SELECT * FROM products";
+        // define your query
+        String query = """
+                        SELECT ProductID, ProductName, UnitPrice, UnitsInStock
+                        FROM products
+                        Where ProductName Like ?
+                        """;
 
-        ResultSet resultName = myStatement.executeQuery(myQuery);
+        // create statement
+        // the statement is tied to the open connection
+        PreparedStatement statement = connection.prepareStatement(query);
 
-        while (resultName.next()) {
-            String row = resultName.getString("ProductName");
-            System.out.println(row);
+        String searchTerm = "%Cha%";
+        //set parameters
+        statement.setString(1,searchTerm);
+
+        // 2. Execute your query
+        ResultSet results = statement.executeQuery();
+
+        // process the results
+        while (results.next()) {
+            int ProductID = results.getInt("ProductID");
+            String ProductName = results.getString("ProductName");
+            double UnitPrice = results.getDouble("UnitPrice");
+            int UnitsInStock = results.getInt("UnitsInStock");
+
+            System.out.println(ProductID);
+            System.out.println(ProductName);
+            System.out.println(UnitPrice);
+            System.out.println(UnitsInStock);
+            System.out.println("-----------------------");
         }
-        myConnection.close();
+
+        results.close();
+        statement.close();
+        connection.close();
 
     }
 }
